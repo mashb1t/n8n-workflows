@@ -7,7 +7,7 @@
       "typeVersion": 1,
       "position": [
         -1540,
-        -180
+        -306.25
       ],
       "id": "aa0806ab-b88a-435c-b815-43594f6c11b1",
       "name": "When clicking ‘Test workflow’"
@@ -24,8 +24,8 @@
       "name": "Resize For AI",
       "type": "n8n-nodes-base.editImage",
       "position": [
-        -220,
-        -180
+        0,
+        -480
       ],
       "typeVersion": 1
     },
@@ -37,7 +37,7 @@
       "typeVersion": 1,
       "position": [
         -660,
-        -180
+        -306.25
       ],
       "id": "ae0bdb91-99c5-4f2c-8214-2cfc1af54561",
       "name": "Limit",
@@ -46,14 +46,15 @@
     {
       "parameters": {
         "schemaType": "manual",
-        "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"is_food\": { \"type\": \"boolean\" },\n        \"is_vegetarian\": { \"type\": \"boolean\" },\n        \"is_vegan\": { \"type\": \"boolean\" },\n        \"food_description_english\": {\n          \"type\": \"string\",\n          \"description\": \"describe the food in english by mentioning its name and any ingredient(s) if possible.\"\n        },\n        \"food_description_german\": {\n          \"type\": \"string\",\n          \"description\": \"describe the food in german by mentioning its name and any ingredient(s) if possible.\"\n        },\n\t\t\"reasons\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        },\n        \"ingredients\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        }\n\t}\n}"
+        "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"is_food\": { \"type\": \"boolean\" },\n        \"is_vegetarian\": { \"type\": \"boolean\" },\n        \"is_vegan\": { \"type\": \"boolean\" },\n        \"food_description_english\": {\n          \"type\": \"string\",\n          \"description\": \"describe the food in english by mentioning its name and any ingredient(s) if possible. Max. 100 characters.\"\n        },\n        \"food_description_german\": {\n          \"type\": \"string\",\n          \"description\": \"describe the food in german by mentioning its name and any ingredient(s) if possible. Max. 100 characters.\"\n        },\n\t\t\"reasons\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        },\n        \"ingredients\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        }\n\t}\n}",
+        "autoFix": true
       },
       "id": "7e6c2184-e263-47da-9654-1b1ca892c09b",
       "name": "Structured Output Parser",
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "position": [
-        148,
-        40
+        304,
+        -260
       ],
       "typeVersion": 1.2
     },
@@ -67,8 +68,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -440,
-        -180
+        -220,
+        -480
       ],
       "id": "25188fb0-1d34-4176-af11-c30bb2f25bf6",
       "name": "Download Photo",
@@ -108,7 +109,7 @@
       "typeVersion": 4.2,
       "position": [
         -1320,
-        -180
+        -306.25
       ],
       "id": "ced94779-8a43-492a-b59d-446a3044c84c",
       "name": "GET album & Photos",
@@ -155,8 +156,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        816,
-        -180
+        1120,
+        -306.25
       ],
       "id": "68b8bd19-6a23-4706-9a56-5464e4b0f10e",
       "name": "PATCH Photo Metadata",
@@ -180,7 +181,7 @@
       "typeVersion": 1,
       "position": [
         -1100,
-        -180
+        -306.25
       ],
       "id": "06884dcc-122e-4850-8ed2-390e8a0a50f1",
       "name": "Split Out"
@@ -189,7 +190,7 @@
       "parameters": {
         "conditions": {
           "options": {
-            "caseSensitive": true,
+            "caseSensitive": false,
             "leftValue": "",
             "typeValidation": "strict",
             "version": 2
@@ -205,25 +206,44 @@
               }
             },
             {
-              "id": "e2e5494a-c98a-4563-803d-7099c2eb385d",
-              "leftValue": "={{ $json.description }}",
-              "rightValue": "",
+              "id": "d9e7daed-52f0-4547-a3df-bd222e805145",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "PXL-",
               "operator": {
                 "type": "string",
-                "operation": "empty",
-                "singleValue": true
+                "operation": "startsWith"
+              }
+            },
+            {
+              "id": "e2e5494a-c98a-4563-803d-7099c2eb385d",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "IMG_",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
+            },
+            {
+              "id": "9d8d1293-2bfb-4534-96ea-9ee4c88cfb24",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "IMG-",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
               }
             }
           ],
-          "combinator": "and"
+          "combinator": "or"
         },
-        "options": {}
+        "options": {
+          "ignoreCase": true
+        }
       },
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
       "position": [
         -880,
-        -180
+        -306.25
       ],
       "id": "e02c43f3-a072-43c8-b462-e892d47bbe48",
       "name": "Filter"
@@ -248,8 +268,8 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.6,
       "position": [
-        0,
-        -180
+        220,
+        -480
       ],
       "id": "a46332da-3d37-4e4b-ba83-6366735f2f43",
       "name": "Basic LLM Chain1",
@@ -265,8 +285,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
       "typeVersion": 1,
       "position": [
-        28,
-        40
+        308,
+        -65
       ],
       "id": "0223d9e9-2aed-4c84-a6fa-d68230ad0a47",
       "name": "Ollama Chat Model1",
@@ -284,8 +304,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        596,
-        -180
+        900,
+        -480
       ],
       "id": "da1fe61e-a0be-4e27-a085-f8347b9b27ed",
       "name": "Add Tags"
@@ -297,11 +317,25 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        376,
-        -180
+        680,
+        -480
       ],
       "id": "8ff2774b-f112-4500-8db8-549c6203e76c",
       "name": "Trim Dots From Descriptions"
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -440,
+        -306.25
+      ],
+      "id": "888723ac-635e-466e-9719-303b3702b891",
+      "name": "Loop Over Items"
     }
   ],
   "pinData": {},
@@ -332,7 +366,7 @@
       "main": [
         [
           {
-            "node": "Download Photo",
+            "node": "Loop Over Items",
             "type": "main",
             "index": 0
           }
@@ -401,6 +435,11 @@
             "node": "Basic LLM Chain1",
             "type": "ai_languageModel",
             "index": 0
+          },
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
           }
         ]
       ]
@@ -440,7 +479,25 @@
     },
     "PATCH Photo Metadata": {
       "main": [
-        []
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Download Photo",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     }
   },
@@ -448,7 +505,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "8c670b5f-16bb-4dab-9b9b-c21f3610b44a",
+  "versionId": "bd15cb8a-f19f-470a-a96c-4bbe9f90d2d6",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
