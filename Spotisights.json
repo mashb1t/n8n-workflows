@@ -1,0 +1,617 @@
+{
+  "name": "Spotisights",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -660
+      ],
+      "id": "a1ab27ca-2939-489b-bdb1-e413318375cb",
+      "name": "When clicking ‘Test workflow’",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1) Gather unique IDs in a Set\nconst idsSet = new Set(\n  $input\n    .all()\n    .flatMap(item => item.json.track.artists.map(a => a.id))\n);\n\n// 2) Convert back to array of objects\nconst uniqueArtistObjects = [...idsSet].map(id => ({ id }));\n\nreturn uniqueArtistObjects;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        -385
+      ],
+      "id": "886a889e-b657-4fca-b6cf-bd15130c5d05",
+      "name": "Get Artist IDs"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f0f70430-55d3-4c63-abdd-06a52bea7ba3",
+              "name": "cache_ttl",
+              "value": "={{ 60*60*24*30 }}",
+              "type": "string"
+            },
+            {
+              "id": "b30e67d4-59db-4b84-a937-fb3cb25bcb4b",
+              "name": "username",
+              "value": "user",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        -810
+      ],
+      "id": "6f7a0c3d-0b6d-494e-89bc-f37006f38143",
+      "name": "Globals"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        -860
+      ],
+      "id": "3fa066b6-0c1e-4ec4-b81c-ea81cd23214d",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch"
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        1320,
+        -735
+      ],
+      "id": "4a90f6ce-bb23-400e-8a90-5d43b5be1690",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  let uniqueGenres = new Set();\n  for (const artist of item.json.track.artists) {\n    artist.genres = $('Build Artist ID Index').first().json.merged_artists[artist.id].genres.split(',');\n    for (const genre of artist.genres) {\n      uniqueGenres.add(genre);\n    }\n  }\n  item.json.uniqueGenres = [...uniqueGenres].map(genre => ({ genre }));\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        -735
+      ],
+      "id": "84d1bb8d-e75b-4412-93d8-d9290689a2ee",
+      "name": "Add Genres To Track Artists"
+    },
+    {
+      "parameters": {
+        "jsCode": "let objects = {};\n\nfor (const item of $input.all()) {\n  objects[item.json.artist.id] = item.json.artist;\n}\n\nreturn {merged_artists: objects};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        -660
+      ],
+      "id": "f5b77b76-f10c-4553-99d1-e023ca8c53fd",
+      "name": "Build Artist ID Index"
+    },
+    {
+      "parameters": {
+        "operation": "recentlyPlayed"
+      },
+      "type": "n8n-nodes-base.spotify",
+      "typeVersion": 1,
+      "position": [
+        440,
+        -810
+      ],
+      "id": "25d61c37-9ff4-49b1-ad83-b385639b370e",
+      "name": "Get Recently Played",
+      "credentials": {
+        "spotifyOAuth2Api": {
+          "id": "No2PsbJAsrud1GIR",
+          "name": "Spotify account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "artist",
+        "id": "={{ $('Load Artist Data').item.json.id }}"
+      },
+      "type": "n8n-nodes-base.spotify",
+      "typeVersion": 1,
+      "position": [
+        1540,
+        -460
+      ],
+      "id": "82be51d3-975a-471a-89d6-78a2c10f04a4",
+      "name": "Get Artist Information",
+      "credentials": {
+        "spotifyOAuth2Api": {
+          "id": "No2PsbJAsrud1GIR",
+          "name": "Spotify account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a31aa530-5046-480f-9578-d3558c08a8c6",
+              "leftValue": "={{ $json.artist.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1320,
+        -460
+      ],
+      "id": "5dfb8849-9905-4969-82bb-6d059ac2b3be",
+      "name": "Should Lazy Load Artist"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0175e5fa-c8ba-4c94-9253-6ed07e1429e9",
+              "name": "user",
+              "value": "={{ $('Globals').first().json.username }}",
+              "type": "string"
+            },
+            {
+              "id": "8f199851-937b-4071-befd-e6af83666d2b",
+              "name": "artists",
+              "value": "={{ $json.track.album.artists.map(artist => artist.name).join(', ') }}",
+              "type": "string"
+            },
+            {
+              "id": "afb540e2-9211-4bd8-876e-cd5722f00e59",
+              "name": "service",
+              "value": "spotify",
+              "type": "string"
+            },
+            {
+              "id": "7184d200-5d31-4f1a-9127-6a3b25b5830e",
+              "name": "hour_of_day",
+              "value": "={{ $json.played_at.toDateTime().hour }}",
+              "type": "string"
+            },
+            {
+              "id": "0c71c33a-7d9a-4b0f-8f01-0b3c7ba42d87",
+              "name": "track",
+              "value": "={{ $json.track.name }}",
+              "type": "string"
+            },
+            {
+              "id": "c29c29e2-8a31-457e-a8ed-d9a18d6676bf",
+              "name": "track_id",
+              "value": "={{ $json.track.id }}",
+              "type": "string"
+            },
+            {
+              "id": "58075e8c-ab11-435e-b7af-eb7f89ca9f4e",
+              "name": "duration_ms",
+              "value": "={{ $json.track.duration_ms }}",
+              "type": "string"
+            },
+            {
+              "id": "d1a37c9a-ffc8-4523-88ab-0f302d30c97b",
+              "name": "played_at",
+              "value": "={{ $json.played_at }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        660,
+        -960
+      ],
+      "id": "e1453ad1-922d-4ec3-8a2d-98bc997a3b03",
+      "name": "Set Track History Point Data"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0175e5fa-c8ba-4c94-9253-6ed07e1429e9",
+              "name": "user",
+              "value": "={{ $('Globals').first().json.username }}",
+              "type": "string"
+            },
+            {
+              "id": "9bdfb2b7-856b-455a-98dc-0d1d83bdfebe",
+              "name": "service",
+              "value": "spotify",
+              "type": "string"
+            },
+            {
+              "id": "41c07e39-3cf3-492b-aba4-c14dc16c8028",
+              "name": "genre",
+              "value": "={{ $json.genre }}",
+              "type": "string"
+            },
+            {
+              "id": "88654f6d-5c08-4bba-9edb-9029ecc2396d",
+              "name": "value",
+              "value": "1",
+              "type": "string"
+            },
+            {
+              "id": "bc2b4cea-5564-4ff9-b24c-b97aa938ea67",
+              "name": "=played_at",
+              "value": "={{ $('Add Genres To Track Artists').item.json.played_at }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2200,
+        -735
+      ],
+      "id": "9c8a02b8-d7fb-4356-8aa7-c35804add0f3",
+      "name": "Set Genre History Point Data"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        880,
+        -385
+      ],
+      "id": "a1e99ea2-f927-4155-b74d-1726a8e92d6d",
+      "name": "Load Artist Data"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "=artist",
+        "key": "=spotisights.artist.{{ $json.id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        -385
+      ],
+      "id": "9bccbd99-6115-486a-9a54-25bc50d113f7",
+      "name": "Load Artist",
+      "credentials": {
+        "redis": {
+          "id": "MkbdXuerW6kqc5ii",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "=spotisights.artist.{{ $json.id }}",
+        "value": "={{  \n{\n  id: $json.id,\n  name: $json.name,\n  genres: $json.genres\n}\n}}",
+        "expire": true,
+        "ttl": "={{ $('Globals').first().json.cache_ttl }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        -385
+      ],
+      "id": "22034585-b689-4a5f-bbae-28bfb63c47b1",
+      "name": "Set Artist",
+      "credentials": {
+        "redis": {
+          "id": "MkbdXuerW6kqc5ii",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "df99f0a0-1fc7-4768-8034-887fee25b66c",
+              "leftValue": "={{ $json.genre }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        1980,
+        -735
+      ],
+      "id": "a61b1a03-852c-4f60-91fc-076b9cf2b5a3",
+      "name": "Filter Artists With No Genre"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "uniqueGenres",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        -735
+      ],
+      "id": "21baec14-b3bb-4128-a8a4-3ffd30ec5645",
+      "name": "List Genres"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Globals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Artist IDs": {
+      "main": [
+        [
+          {
+            "node": "Load Artist Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Globals": {
+      "main": [
+        [
+          {
+            "node": "Get Recently Played",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Globals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Add Genres To Track Artists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Genres To Track Artists": {
+      "main": [
+        [
+          {
+            "node": "List Genres",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Artist ID Index": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Get Recently Played": {
+      "main": [
+        [
+          {
+            "node": "Get Artist IDs",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Set Track History Point Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Artist Information": {
+      "main": [
+        [
+          {
+            "node": "Set Artist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Lazy Load Artist": {
+      "main": [
+        [
+          {
+            "node": "Get Artist Information",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Load Artist Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Track History Point Data": {
+      "main": [
+        []
+      ]
+    },
+    "Load Artist Data": {
+      "main": [
+        [
+          {
+            "node": "Build Artist ID Index",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Load Artist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Artist": {
+      "main": [
+        [
+          {
+            "node": "Should Lazy Load Artist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Artist": {
+      "main": [
+        [
+          {
+            "node": "Load Artist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Artists With No Genre": {
+      "main": [
+        [
+          {
+            "node": "Set Genre History Point Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Genres": {
+      "main": [
+        [
+          {
+            "node": "Filter Artists With No Genre",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "3f9fc2c0-cc18-4c3e-8bd9-1cddae89e77c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "IyyDeZj0WfEbK8U2",
+  "tags": []
+}
