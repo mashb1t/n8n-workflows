@@ -1,0 +1,458 @@
+{
+  "name": "food-describer",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1540,
+        -180
+      ],
+      "id": "aa0806ab-b88a-435c-b815-43594f6c11b1",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "resize",
+        "width": 1024,
+        "height": 1024,
+        "resizeOption": "onlyIfLarger",
+        "options": {}
+      },
+      "id": "49b9dcea-bd4f-49a8-8cd2-76a7b84ea428",
+      "name": "Resize For AI",
+      "type": "n8n-nodes-base.editImage",
+      "position": [
+        -220,
+        -180
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "maxItems": 2
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -660,
+        -180
+      ],
+      "id": "ae0bdb91-99c5-4f2c-8214-2cfc1af54561",
+      "name": "Limit",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"is_food\": { \"type\": \"boolean\" },\n        \"is_vegetarian\": { \"type\": \"boolean\" },\n        \"is_vegan\": { \"type\": \"boolean\" },\n        \"food_description_english\": {\n          \"type\": \"string\",\n          \"description\": \"describe the food in english by mentioning its name and any ingredient(s) if possible.\"\n        },\n        \"food_description_german\": {\n          \"type\": \"string\",\n          \"description\": \"describe the food in german by mentioning its name and any ingredient(s) if possible.\"\n        },\n\t\t\"reasons\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        },\n        \"ingredients\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        }\n\t}\n}"
+      },
+      "id": "7e6c2184-e263-47da-9654-1b1ca892c09b",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "position": [
+        148,
+        40
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.size_variants.original.url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "lycheeApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -440,
+        -180
+      ],
+      "id": "25188fb0-1d34-4176-af11-c30bb2f25bf6",
+      "name": "Download Photo",
+      "credentials": {
+        "lycheeApi": {
+          "id": "wuu9xjXvRlNJJ3FK",
+          "name": "Lychee account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://gallery.mashb1t.de/api/v2/Album",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "album_id",
+              "value": "pxGrsf1fW1LEeQS3mpyQbOD7"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1320,
+        -180
+      ],
+      "id": "ced94779-8a43-492a-b59d-446a3044c84c",
+      "name": "GET album & Photos",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "ETAqHLagzWJZnKVi",
+          "name": "Bearer Auth account"
+        },
+        "lycheeApi": {
+          "id": "wuu9xjXvRlNJJ3FK",
+          "name": "Lychee account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "https://gallery.mashb1t.de/api/v2/Photo",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "=photo_id",
+              "value": "={{ $('Filter').item.json.id }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n\t\"title\": \"{{ $json.output.food_description_german }}\",\n\t\"description\": \"{{ $json.output.food_description_english }}\",\n\t\"tags\": {{ $json.output.tags.toJsonString() }},\n\t\"license\": \"{{ $('Filter').item.json.license }}\",\n\t\"upload_date\": \"{{ $('Filter').item.json.created_at }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        816,
+        -180
+      ],
+      "id": "68b8bd19-6a23-4706-9a56-5464e4b0f10e",
+      "name": "PATCH Photo Metadata",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "ETAqHLagzWJZnKVi",
+          "name": "Bearer Auth account"
+        },
+        "lycheeApi": {
+          "id": "wuu9xjXvRlNJJ3FK",
+          "name": "Lychee account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "resource.photos",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -1100,
+        -180
+      ],
+      "id": "06884dcc-122e-4850-8ed2-390e8a0a50f1",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "264b186d-d4dc-4c05-a939-348607b7db33",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "PXL_",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
+            },
+            {
+              "id": "e2e5494a-c98a-4563-803d-7099c2eb385d",
+              "leftValue": "={{ $json.description }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -880,
+        -180
+      ],
+      "id": "e02c43f3-a072-43c8-b462-e892d47bbe48",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Describe the given image in maximum 10 words.",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an expert chef who worked in a restaurant for many years.\nYour task is to precisely and concisely describe images of food, starting with the main ingredient. Be very detailed and use the name of the specific dish instead of only ingredients if possible.\nOutput both english and german titles.\n\nExamples:\n* steak on cauliflower and mashed potatoes | Pfeffersteak auf Blumenkohl-Kartoffelbrei\n* Goulash with cauliflower and dumplings | Rindergulasch mit Knödeln\n* Burrata on tomatoes with basil | Burrata auf Tomaten mit Basilikum\n\n"
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "messageType": "imageBinary"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        0,
+        -180
+      ],
+      "id": "a46332da-3d37-4e4b-ba83-6366735f2f43",
+      "name": "Basic LLM Chain1",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "model": "gemma3:27b",
+        "options": {
+          "format": "default"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        28,
+        40
+      ],
+      "id": "0223d9e9-2aed-4c84-a6fa-d68230ad0a47",
+      "name": "Ollama Chat Model1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "He8ngo0H29byJHj4",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.output.tags = item.json.output.ingredients\n  if (item.json.output.is_vegan) {\n    item.json.output.tags.push(\"vegan\")\n  } else if (item.json.output.is_vegetarian) {\n    item.json.output.tags.push(\"vegetarian\")\n  }\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        596,
+        -180
+      ],
+      "id": "da1fe61e-a0be-4e27-a085-f8347b9b27ed",
+      "name": "Add Tags"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.output.food_description_english = item.json.output.food_description_english.trim().replace(/\\.$/, \"\")\n  item.json.output.food_description_german = item.json.output.food_description_german.trim().replace(/\\.$/, \"\")\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        376,
+        -180
+      ],
+      "id": "8ff2774b-f112-4500-8db8-549c6203e76c",
+      "name": "Trim Dots From Descriptions"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "GET album & Photos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resize For AI": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Download Photo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Photo": {
+      "main": [
+        [
+          {
+            "node": "Resize For AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET album & Photos": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain1": {
+      "main": [
+        [
+          {
+            "node": "Trim Dots From Descriptions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Tags": {
+      "main": [
+        [
+          {
+            "node": "PATCH Photo Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trim Dots From Descriptions": {
+      "main": [
+        [
+          {
+            "node": "Add Tags",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PATCH Photo Metadata": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "8c670b5f-16bb-4dab-9b9b-c21f3610b44a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "NyLjzOjzyUAHwSDu",
+  "tags": []
+}
