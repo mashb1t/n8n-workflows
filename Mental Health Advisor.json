@@ -1,0 +1,866 @@
+{
+  "name": "Mental Health Advisor",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -900,
+        700
+      ],
+      "id": "fe115ac2-de22-457a-9014-fb36ec56c266",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Hi there! 👋\nPlease type \"form\" to provide additional data via a form.",
+        "options": {
+          "loadPreviousSession": "manually"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1340,
+        1100
+      ],
+      "id": "091e2f68-403c-488a-82d2-963dac77fea2",
+      "name": "When chat message received",
+      "webhookId": "mental-wellbeing"
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Data processed",
+        "completionMessage": "=You can now continue chatting with your support plan.\n\nYour Support Plan:\n\n\n{{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 1,
+      "position": [
+        1320,
+        280
+      ],
+      "id": "76fad458-cb76-412f-9d9e-0016ade8de0c",
+      "name": "Form1",
+      "webhookId": "3b4cb5a9-f2c8-4b5e-b5e5-e703db4103a5"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "={{ $('Prompts').item.json.task_prompt }}\n\nYou are a mental health recovery planner speaking directly to the user. Your task is to:\n\n1. Design a personalized long-term support strategy with milestone markers\n2. Create a progress monitoring system that matches their preferences and habits\n3. Develop specific relapse prevention strategies based on their unique triggers\n4. Establish a support network mapping exercise to identify existing resources\n5. Build a graduated self-care routine that evolves with their recovery\n6. Plan for setbacks with self-compassion techniques\n7. Set up a maintenance schedule with clear check-in mechanisms\n\nFocus on building sustainable habits that integrate with their lifestyle and values. Emphasize progress over perfection and teach skills for self-directed care."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        720,
+        280
+      ],
+      "id": "cd7c6940-4cd7-4ece-af71-1f69f2cd24ac",
+      "name": "Follow-Up Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.task_prompt }}\n\nYou are an experienced mental health professional speaking directly to the user. Your task is to:\n\n1. Create a safe space by acknowledging their courage in seeking support\n2. Analyze their emotional state with clinical precision and genuine empathy\n3. Ask targeted follow-up questions to understand their full situation\n4. Identify patterns in their thoughts, behaviors, and relationships\n5. Assess risk levels with validated screening approaches\n6. Help them understand their current mental health in accessible language\n7. Validate their experiences without minimizing or catastrophizing\n\nAlways use \"you\" and \"your\" when addressing the user. Blend clinical expertise with genuine warmth and never rush to conclusions.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        280
+      ],
+      "id": "9037808b-de19-421b-a600-ba3835198acb",
+      "name": "Assessment Agent"
+    },
+    {
+      "parameters": {
+        "model": "gemma3:27b-it-qat",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        500
+      ],
+      "id": "c5a00b4e-e1c0-4c69-8a95-a837912469c8",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "fPDYjnV4Jewco6ZG",
+          "name": "Ollama account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9d452c87-2094-4d58-85dd-232558622d13",
+              "name": "task_prompt",
+              "value": "=Create a comprehensive mental health support plan based on:\n                \nEmotional State: {{ $json.mental_state }}\nSleep: {{ $json.sleep_pattern }} hours per night\nStress Level: {{ $json.stress_level }}/10\nSupport System: {{ $json.support_system.length > 0 ? $json.support_system.join(\", \") : \"None reported\" }}\nRecent Changes: {{ $json.recent_changes }}\nCurrent Symptoms: {{ $json.current_symptoms.length > 0 ? $json.current_symptoms.join(\", \") : \"None reported\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -780,
+        280
+      ],
+      "id": "e15627c0-74b5-4260-8de6-03e4404d16e3",
+      "name": "Prompts"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "af078652-a66a-49bf-82e7-e59980232300",
+              "name": "mental_state",
+              "value": "={{ $json['How have you been feeling recently?'].trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "bd0bb8a7-0742-4857-bd8c-0108a2e6aafa",
+              "name": "sleep_pattern",
+              "value": "={{ $json['Sleep Pattern (hours per night)'] }}",
+              "type": "number"
+            },
+            {
+              "id": "75e1f00b-9389-4d75-9fdc-c599b3685151",
+              "name": "stress_level",
+              "value": "={{ $json['Current Stress Level'] }}",
+              "type": "number"
+            },
+            {
+              "id": "94050648-6739-418e-a0ce-68e53ab41d83",
+              "name": "support_system",
+              "value": "={{ $json['Current Support System'] }}",
+              "type": "array"
+            },
+            {
+              "id": "f4988c7c-3c44-4467-9927-97f3730c8723",
+              "name": "recent_changes",
+              "value": "={{ $json['Any significant life changes or events recently?'].trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "ac895238-e2e6-40fd-8daa-6832dfafb712",
+              "name": "current_symptoms",
+              "value": "={{ $json['Current Symptoms'] }}",
+              "type": "array"
+            },
+            {
+              "id": "30fa2219-9dce-4295-b287-f5c708b558b1",
+              "name": "session_id",
+              "value": "={{ $json.formQueryParameters.sessionId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {
+          "ignoreConversionErrors": true
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1080,
+        280
+      ],
+      "id": "3d6f8f3d-59f4-4c9f-af58-a2c1eb8ef538",
+      "name": "Read Input"
+    },
+    {
+      "parameters": {
+        "content": "## Agents\n\n🧠 **Assessment Agent** - Analyzes your situation and emotional needs\n🎯 **Action Agent** - Creates immediate action plan and connects you with resources\n🔄 **Follow-up Agent** - Designs your long-term support strategy",
+        "height": 180,
+        "width": 480
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "550015cd-f61c-4e72-b4b6-186bdc0c0e8d",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "formTitle": "Mental Wellbeing Agent",
+        "formDescription": "⚠️ Important Notice\n\nThis application is a supportive tool and does not replace professional mental health care. If you are currently going through a deep crisis or are having suicidal thoughts, immediately call the emergency line 112 in Germany.\n\nIn case of searching council\n- Call TelefonSeelsorge: 0800 111 0 111 / 0800 111 0 222 / 116 123\n- Call International Helpline Berlin: 030 44 01 06 07\n- Seek professional help\n\n\nAll input is being stored for processing and further analysis.\nYou may also download the flow from https://github.com/mashb1t/n8n-workflows to run on your computer via https://github.com/mashb1t/ai-starterkit-docker",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "How have you been feeling recently?",
+              "fieldType": "textarea",
+              "placeholder": "Describe your emotional state, thoughts, or concerns...",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Sleep Pattern (hours per night)",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "0"
+                  },
+                  {
+                    "option": "1"
+                  },
+                  {
+                    "option": "2"
+                  },
+                  {
+                    "option": "3"
+                  },
+                  {
+                    "option": "4"
+                  },
+                  {
+                    "option": "5"
+                  },
+                  {
+                    "option": "6"
+                  },
+                  {
+                    "option": "7"
+                  },
+                  {
+                    "option": "8"
+                  },
+                  {
+                    "option": "9"
+                  },
+                  {
+                    "option": "10"
+                  },
+                  {
+                    "option": "11"
+                  },
+                  {
+                    "option": "12"
+                  },
+                  {
+                    "option": "13"
+                  },
+                  {
+                    "option": "14"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Current Stress Level",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "1"
+                  },
+                  {
+                    "option": "2"
+                  },
+                  {
+                    "option": "3"
+                  },
+                  {
+                    "option": "4"
+                  },
+                  {
+                    "option": "5"
+                  },
+                  {
+                    "option": "6"
+                  },
+                  {
+                    "option": "7"
+                  },
+                  {
+                    "option": "8"
+                  },
+                  {
+                    "option": "9"
+                  },
+                  {
+                    "option": "10"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Current Support System",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Family"
+                  },
+                  {
+                    "option": "Friends"
+                  },
+                  {
+                    "option": "Therapist"
+                  },
+                  {
+                    "option": "Support Groups"
+                  },
+                  {
+                    "option": "None"
+                  }
+                ]
+              },
+              "multiselect": true
+            },
+            {
+              "fieldLabel": "Any significant life changes or events recently?",
+              "fieldType": "textarea",
+              "placeholder": "Job changes, relationships, losses, etc...",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Current Symptoms",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Anxiety"
+                  },
+                  {
+                    "option": "Depression"
+                  },
+                  {
+                    "option": "Insomnia"
+                  },
+                  {
+                    "option": "Fatigue"
+                  },
+                  {
+                    "option": "Loss of Interest"
+                  },
+                  {
+                    "option": "Difficulty Concentrating"
+                  },
+                  {
+                    "option": "Changes in Appetite"
+                  },
+                  {
+                    "option": "Social Withdrawal"
+                  },
+                  {
+                    "option": "Mood Swings"
+                  },
+                  {
+                    "option": "Physical Discomfort"
+                  },
+                  {
+                    "option": "None"
+                  }
+                ]
+              },
+              "multiselect": true
+            }
+          ]
+        },
+        "responseMode": "lastNode",
+        "options": {
+          "appendAttribution": false,
+          "buttonLabel": "Generate Support Plan",
+          "path": "mental-wellbeing"
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -1300,
+        280
+      ],
+      "id": "17bf7df8-bd8f-4870-a7cf-fdc801ec12cb",
+      "name": "On form submission",
+      "webhookId": "35d62d5d-002a-4bae-9fc2-ccfbba253db0"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "72efabf4-a41b-4114-9e9f-ed0a9cc497d9",
+              "name": "output",
+              "value": "=Please fill out the form at http://localhost:5678/form/mental-wellbeing?sessionId={{ $('When chat message received').item.json.sessionId }}\n\nAfter filling the form you can get your action plan by typing \"action_plan\"",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -840,
+        1100
+      ],
+      "id": "98c3b188-8fcd-49cd-bd2f-fceb2b2da54c",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Read Input').item.json.session_id }}",
+        "contextWindowLength": 100
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -340,
+        500
+      ],
+      "id": "85afc2a3-e494-4971-b88c-87a10904d77b",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('When chat message received').item.json.sessionId }}",
+        "contextWindowLength": 100
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -820,
+        920
+      ],
+      "id": "1597da83-733c-4b97-886c-42ac87914a09",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.chatInput }}",
+                    "rightValue": "form",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "e6aab9b9-8b29-4e88-8c2e-c9adc3739fc6"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "form"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f045154d-a05b-443a-8baf-d54940939f5b",
+                    "leftValue": "={{ $json.chatInput }}",
+                    "rightValue": "action_plan",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "action_plan"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1120,
+        1100
+      ],
+      "id": "031af94a-0396-49d1-ba5e-8d072c06b318",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "={{ $('Prompts').item.json.task_prompt }}\n\nYou are a crisis intervention and resource specialist speaking directly to the user. Your task is to:\n\n1. Provide immediate evidence-based coping strategies tailored to their specific situation\n2. Prioritize interventions based on urgency and effectiveness\n3. Connect them with appropriate mental health services while acknowledging barriers (cost, access, stigma)\n4. Create a concrete daily wellness plan with specific times and activities\n5. Suggest specific support communities with details on how to join\n6. Balance crisis resources with empowerment techniques\n7. Teach simple self-regulation techniques they can use immediately\n\nFocus on practical, achievable steps that respect their current capacity and energy levels. Provide options ranging from minimal effort to more involved actions."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        120,
+        280
+      ],
+      "id": "9fd0102c-5b0b-472b-acc4-d76056c20f8e",
+      "name": "Action Plan Agent"
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $('Read Input').item.json.session_id }}.followup",
+        "value": "={{ $json.output }}",
+        "expire": true,
+        "ttl": 3600
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        280
+      ],
+      "id": "01565834-3e37-401e-919d-bb4be79c2310",
+      "name": "Set Follow-up",
+      "credentials": {
+        "redis": {
+          "id": "PLSq5Pe4eGWlQ2dM",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $('Read Input').item.json.session_id }}.action_plan",
+        "value": "={{ $json.output }}",
+        "expire": true,
+        "ttl": 3600
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        500,
+        280
+      ],
+      "id": "1f8fa115-6190-4e46-bc7a-3ea1703a0d29",
+      "name": "Set Action Plan",
+      "credentials": {
+        "redis": {
+          "id": "PLSq5Pe4eGWlQ2dM",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $('Read Input').item.json.session_id }}.assessment",
+        "value": "={{ $json.output }}",
+        "expire": true,
+        "ttl": 3600
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -100,
+        280
+      ],
+      "id": "cea161d1-641e-4718-9c55-f716350f3180",
+      "name": "Set Assessment",
+      "credentials": {
+        "redis": {
+          "id": "PLSq5Pe4eGWlQ2dM",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "output",
+        "key": "={{ $('When chat message received').item.json.sessionId }}.action_plan",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -840,
+        1300
+      ],
+      "id": "6457b782-4a74-4300-a334-8cbee5702f1c",
+      "name": "Get Action Plan",
+      "credentials": {
+        "redis": {
+          "id": "PLSq5Pe4eGWlQ2dM",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Add prompt to agent",
+        "height": 80,
+        "width": 260
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -900,
+        580
+      ],
+      "id": "dec86f17-8209-42c6-8a09-75e5ba5ee242",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Retrieve from LLM with tool call",
+        "height": 80,
+        "width": 260
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        1320
+      ],
+      "id": "6376a821-4960-4abd-835f-15150f2a142a",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Follow-Up Agent": {
+      "main": [
+        [
+          {
+            "node": "Set Follow-up",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assessment Agent": {
+      "main": [
+        [
+          {
+            "node": "Set Assessment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Follow-Up Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Action Plan Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Assessment Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompts": {
+      "main": [
+        [
+          {
+            "node": "Assessment Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Input": {
+      "main": [
+        [
+          {
+            "node": "Prompts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Read Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Follow-Up Agent",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "Assessment Agent",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "Action Plan Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Action Plan",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Action Plan Agent": {
+      "main": [
+        [
+          {
+            "node": "Set Action Plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Follow-up": {
+      "main": [
+        [
+          {
+            "node": "Form1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Action Plan": {
+      "main": [
+        [
+          {
+            "node": "Follow-Up Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Assessment": {
+      "main": [
+        [
+          {
+            "node": "Action Plan Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "36fd12c2-702a-4bab-b58f-f96dec64d7cc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "HDesvzM3pMVTOyBh",
+  "tags": []
+}
