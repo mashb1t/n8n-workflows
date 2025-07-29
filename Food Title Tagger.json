@@ -1,15 +1,15 @@
 {
-  "name": "food-describer",
+  "name": "Recipe Describer v1.1",
   "nodes": [
     {
       "parameters": {},
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -1540,
-        -306.25
+        -1600,
+        25
       ],
-      "id": "aa0806ab-b88a-435c-b815-43594f6c11b1",
+      "id": "be58bdf4-a6c6-4308-8f69-0a6db9c61930",
       "name": "When clicking ‘Test workflow’"
     },
     {
@@ -20,41 +20,38 @@
         "resizeOption": "onlyIfLarger",
         "options": {}
       },
-      "id": "49b9dcea-bd4f-49a8-8cd2-76a7b84ea428",
+      "id": "ce83b4cc-8e5d-49e9-b35b-823f6a14be24",
       "name": "Resize For AI",
       "type": "n8n-nodes-base.editImage",
       "position": [
-        0,
-        -480
+        160,
+        -100
       ],
       "typeVersion": 1
     },
     {
-      "parameters": {
-        "maxItems": 2
-      },
+      "parameters": {},
       "type": "n8n-nodes-base.limit",
       "typeVersion": 1,
       "position": [
-        -660,
-        -306.25
+        -500,
+        25
       ],
-      "id": "ae0bdb91-99c5-4f2c-8214-2cfc1af54561",
+      "id": "b5af2a80-955d-4a90-a69b-2f57e072156d",
       "name": "Limit",
       "disabled": true
     },
     {
       "parameters": {
         "schemaType": "manual",
-        "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"is_food\": { \"type\": \"boolean\" },\n        \"is_vegetarian\": { \"type\": \"boolean\" },\n        \"is_vegan\": { \"type\": \"boolean\" },\n        \"food_description_english\": {\n          \"type\": \"string\",\n          \"description\": \"describe the food in english by mentioning its name and any ingredient(s) if possible. Max. 100 characters.\"\n        },\n        \"food_description_german\": {\n          \"type\": \"string\",\n          \"description\": \"describe the food in german by mentioning its name and any ingredient(s) if possible. Max. 100 characters.\"\n        },\n\t\t\"reasons\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        },\n        \"ingredients\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        }\n\t}\n}",
-        "autoFix": true
+        "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"is_food\": { \"type\": \"boolean\" },\n        \"is_vegetarian\": { \"type\": \"boolean\" },\n        \"is_vegan\": { \"type\": \"boolean\" },\n        \"food_description_english\": {\n          \"type\": \"string\",\n          \"description\": \"describe the food in english by mentioning its name and any ingredient(s) if possible. Max. 100 characters.\"\n        },\n        \"food_description_german\": {\n          \"type\": \"string\",\n          \"description\": \"describe the food in german by mentioning its name and any ingredient(s) if possible. Max. 100 characters.\"\n        },\n\t\t\"reasons\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        },\n        \"ingredients\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        }\n\t}\n}"
       },
-      "id": "7e6c2184-e263-47da-9654-1b1ca892c09b",
+      "id": "b4228e49-1b53-42d2-bd11-255318998b29",
       "name": "Structured Output Parser",
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "position": [
-        304,
-        -260
+        528,
+        120
       ],
       "typeVersion": 1.2
     },
@@ -62,21 +59,21 @@
       "parameters": {
         "url": "={{ $json.size_variants.original.url }}",
         "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "lycheeApi",
+        "nodeCredentialType": "httpBearerAuth",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -220,
-        -480
+        -60,
+        -100
       ],
-      "id": "25188fb0-1d34-4176-af11-c30bb2f25bf6",
+      "id": "9a591534-61fe-4a7c-a90f-2a1a301e1972",
       "name": "Download Photo",
       "credentials": {
-        "lycheeApi": {
-          "id": "wuu9xjXvRlNJJ3FK",
-          "name": "Lychee account"
+        "httpBearerAuth": {
+          "id": "235H7mpPpL2JVfO9",
+          "name": "Bearer Auth account"
         }
       }
     },
@@ -90,7 +87,7 @@
           "parameters": [
             {
               "name": "album_id",
-              "value": "pxGrsf1fW1LEeQS3mpyQbOD7"
+              "value": "={{ $json.album_id }}"
             }
           ]
         },
@@ -103,24 +100,22 @@
             }
           ]
         },
-        "options": {}
+        "options": {
+          "allowUnauthorizedCerts": false
+        }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -1320,
-        -306.25
+        -1160,
+        25
       ],
-      "id": "ced94779-8a43-492a-b59d-446a3044c84c",
+      "id": "52bd2987-c607-48e9-93a9-39aad34939fe",
       "name": "GET album & Photos",
       "credentials": {
         "httpBearerAuth": {
-          "id": "ETAqHLagzWJZnKVi",
+          "id": "235H7mpPpL2JVfO9",
           "name": "Bearer Auth account"
-        },
-        "lycheeApi": {
-          "id": "wuu9xjXvRlNJJ3FK",
-          "name": "Lychee account"
         }
       }
     },
@@ -136,6 +131,10 @@
             {
               "name": "=photo_id",
               "value": "={{ $('Filter').item.json.id }}"
+            },
+            {
+              "name": "from_id",
+              "value": "={{ $('Edit Fields').item.json.album_id }}"
             }
           ]
         },
@@ -156,19 +155,15 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1120,
-        -306.25
+        1196,
+        25
       ],
-      "id": "68b8bd19-6a23-4706-9a56-5464e4b0f10e",
+      "id": "b8093164-ca1b-4eb1-8734-fea1b696886d",
       "name": "PATCH Photo Metadata",
       "credentials": {
         "httpBearerAuth": {
-          "id": "ETAqHLagzWJZnKVi",
+          "id": "235H7mpPpL2JVfO9",
           "name": "Bearer Auth account"
-        },
-        "lycheeApi": {
-          "id": "wuu9xjXvRlNJJ3FK",
-          "name": "Lychee account"
         }
       }
     },
@@ -180,10 +175,10 @@
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
-        -1100,
-        -306.25
+        -940,
+        25
       ],
-      "id": "06884dcc-122e-4850-8ed2-390e8a0a50f1",
+      "id": "65a8418a-69a2-494b-a2dd-4f8fc6645dfa",
       "name": "Split Out"
     },
     {
@@ -242,10 +237,10 @@
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
       "position": [
-        -880,
-        -306.25
+        -720,
+        25
       ],
-      "id": "e02c43f3-a072-43c8-b462-e892d47bbe48",
+      "id": "17d87169-fd15-4321-a12b-d3b2e3156c1a",
       "name": "Filter"
     },
     {
@@ -268,10 +263,10 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.6,
       "position": [
-        220,
-        -480
+        380,
+        -100
       ],
-      "id": "a46332da-3d37-4e4b-ba83-6366735f2f43",
+      "id": "ce97630f-cd03-4ba2-af51-0174cc16e69d",
       "name": "Basic LLM Chain1",
       "retryOnFail": true
     },
@@ -285,15 +280,15 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
       "typeVersion": 1,
       "position": [
-        308,
-        -65
+        408,
+        120
       ],
-      "id": "0223d9e9-2aed-4c84-a6fa-d68230ad0a47",
+      "id": "5f1ae25e-e066-4853-9cad-fa233d79cee5",
       "name": "Ollama Chat Model1",
       "credentials": {
         "ollamaApi": {
-          "id": "He8ngo0H29byJHj4",
-          "name": "Ollama account"
+          "id": "ollama",
+          "name": "Ollama (docker host)"
         }
       }
     },
@@ -304,10 +299,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        900,
-        -480
+        976,
+        -100
       ],
-      "id": "da1fe61e-a0be-4e27-a085-f8347b9b27ed",
+      "id": "6a8bfbe0-61d1-4fc7-b556-f6ea617896ed",
       "name": "Add Tags"
     },
     {
@@ -317,10 +312,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        680,
-        -480
+        756,
+        -100
       ],
-      "id": "8ff2774b-f112-4500-8db8-549c6203e76c",
+      "id": "826dcec7-206e-46ba-8fc1-1e58e8758e86",
       "name": "Trim Dots From Descriptions"
     },
     {
@@ -331,11 +326,34 @@
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        -440,
-        -306.25
+        -280,
+        25
       ],
-      "id": "888723ac-635e-466e-9719-303b3702b891",
+      "id": "abbe8b1a-1825-4a09-8d85-2944a1e94f89",
       "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1bd7166c-0e38-43ea-bc27-2ac01e770c68",
+              "name": "album_id",
+              "value": "pxGrsf1fW1LEeQS3mpyQbOD7",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1380,
+        25
+      ],
+      "id": "d65b8dde-d24d-47ea-b940-a9a5cda300db",
+      "name": "Edit Fields"
     }
   ],
   "pinData": {},
@@ -344,7 +362,7 @@
       "main": [
         [
           {
-            "node": "GET album & Photos",
+            "node": "Edit Fields",
             "type": "main",
             "index": 0
           }
@@ -435,11 +453,6 @@
             "node": "Basic LLM Chain1",
             "type": "ai_languageModel",
             "index": 0
-          },
-          {
-            "node": "Structured Output Parser",
-            "type": "ai_languageModel",
-            "index": 0
           }
         ]
       ]
@@ -499,17 +512,28 @@
           }
         ]
       ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "GET album & Photos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "bd15cb8a-f19f-470a-a96c-4bbe9f90d2d6",
+  "versionId": "be546a20-7e62-4244-b0a6-479b568cdf80",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
   },
-  "id": "NyLjzOjzyUAHwSDu",
+  "id": "XHnXpNxlPPUyg1op",
   "tags": []
 }
