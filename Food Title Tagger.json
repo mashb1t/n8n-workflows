@@ -1,15 +1,15 @@
 {
-  "name": "Recipe Describer v1.1",
+  "name": "Food Describer v1.2",
   "nodes": [
     {
       "parameters": {},
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -1600,
-        25
+        -1536,
+        176
       ],
-      "id": "be58bdf4-a6c6-4308-8f69-0a6db9c61930",
+      "id": "7cba5d53-ccc0-4e06-8460-6cc68f870924",
       "name": "When clicking ‘Test workflow’"
     },
     {
@@ -20,12 +20,12 @@
         "resizeOption": "onlyIfLarger",
         "options": {}
       },
-      "id": "ce83b4cc-8e5d-49e9-b35b-823f6a14be24",
+      "id": "bfbbc3e3-892d-4805-b6ae-230623a67bf0",
       "name": "Resize For AI",
       "type": "n8n-nodes-base.editImage",
       "position": [
-        160,
-        -100
+        256,
+        0
       ],
       "typeVersion": 1
     },
@@ -34,24 +34,25 @@
       "type": "n8n-nodes-base.limit",
       "typeVersion": 1,
       "position": [
-        -500,
-        25
+        -416,
+        176
       ],
-      "id": "b5af2a80-955d-4a90-a69b-2f57e072156d",
+      "id": "d550360e-6117-4635-8626-699083e532a9",
       "name": "Limit",
       "disabled": true
     },
     {
       "parameters": {
         "schemaType": "manual",
-        "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"is_food\": { \"type\": \"boolean\" },\n        \"is_vegetarian\": { \"type\": \"boolean\" },\n        \"is_vegan\": { \"type\": \"boolean\" },\n        \"food_description_english\": {\n          \"type\": \"string\",\n          \"description\": \"describe the food in english by mentioning its name and any ingredient(s) if possible. Max. 100 characters.\"\n        },\n        \"food_description_german\": {\n          \"type\": \"string\",\n          \"description\": \"describe the food in german by mentioning its name and any ingredient(s) if possible. Max. 100 characters.\"\n        },\n\t\t\"reasons\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        },\n        \"ingredients\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        }\n\t}\n}"
+        "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"is_food\": { \"type\": \"boolean\" },\n\t\t\"diet\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"enum\": [\"vegan\", \"vegetarian\", \"non-vegetarian\"],\n\t\t\t\"description\": \"dietary classification of the food\"\n\t\t},\n\t\t\"category\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"enum\": [\"appetizer\", \"main dish\", \"dessert\", \"other\"],\n\t\t\t\"description\": \"the category of the food\"\n\t\t},\n\t\t\"food_description_english\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"description\": \"describe the food in english by mentioning its name and any ingredient(s) if possible. Max. 100 characters.\"\n\t\t},\n\t\t\"food_description_german\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"description\": \"describe the food in german by mentioning its name and any ingredient(s) if possible. Max. 100 characters.\"\n\t\t},\n\t\t\"ingredients\": {\n\t\t\t\"type\": \"array\",\n\t\t\t\"items\": { \"type\": \"string\" }\n\t\t}\n\t}\n}",
+        "autoFix": true
       },
-      "id": "b4228e49-1b53-42d2-bd11-255318998b29",
+      "id": "9158b16b-b7b9-4735-bfe8-fe7584cbe695",
       "name": "Structured Output Parser",
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "position": [
-        528,
-        120
+        560,
+        224
       ],
       "typeVersion": 1.2
     },
@@ -65,21 +66,21 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -60,
-        -100
+        32,
+        0
       ],
-      "id": "9a591534-61fe-4a7c-a90f-2a1a301e1972",
+      "id": "26d28da0-8781-4b40-815c-5650b4993061",
       "name": "Download Photo",
       "credentials": {
         "httpBearerAuth": {
-          "id": "235H7mpPpL2JVfO9",
-          "name": "Bearer Auth account"
+          "id": "CK6L6i4TkJUPU6PU",
+          "name": "Lychee API"
         }
       }
     },
     {
       "parameters": {
-        "url": "https://gallery.mashb1t.de/api/v2/Album",
+        "url": "https://gallery.mashb1t.de/api/v2/Album::photos",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpBearerAuth",
         "sendQuery": true,
@@ -101,21 +102,35 @@
           ]
         },
         "options": {
-          "allowUnauthorizedCerts": false
+          "allowUnauthorizedCerts": false,
+          "pagination": {
+            "pagination": {
+              "parameters": {
+                "parameters": [
+                  {
+                    "name": "page",
+                    "value": "={{ $pageCount + 1 }}"
+                  }
+                ]
+              },
+              "paginationCompleteWhen": "other",
+              "completeExpression": "={{ $response.body.current_page == $response.body.last_page }}"
+            }
+          }
         }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -1160,
-        25
+        -1088,
+        176
       ],
-      "id": "52bd2987-c607-48e9-93a9-39aad34939fe",
+      "id": "95654fcf-32ea-4559-8aae-8bdb051cfbf9",
       "name": "GET album & Photos",
       "credentials": {
         "httpBearerAuth": {
-          "id": "235H7mpPpL2JVfO9",
-          "name": "Bearer Auth account"
+          "id": "CK6L6i4TkJUPU6PU",
+          "name": "Lychee API"
         }
       }
     },
@@ -155,30 +170,30 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1196,
-        25
+        1376,
+        176
       ],
-      "id": "b8093164-ca1b-4eb1-8734-fea1b696886d",
+      "id": "99a8cd53-6c53-4455-8a68-838704915c1e",
       "name": "PATCH Photo Metadata",
       "credentials": {
         "httpBearerAuth": {
-          "id": "235H7mpPpL2JVfO9",
-          "name": "Bearer Auth account"
+          "id": "CK6L6i4TkJUPU6PU",
+          "name": "Lychee API"
         }
       }
     },
     {
       "parameters": {
-        "fieldToSplitOut": "resource.photos",
+        "fieldToSplitOut": "photos",
         "options": {}
       },
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
-        -940,
-        25
+        -864,
+        176
       ],
-      "id": "65a8418a-69a2-494b-a2dd-4f8fc6645dfa",
+      "id": "abc8042d-2ca0-44e5-8602-6b0e10afc977",
       "name": "Split Out"
     },
     {
@@ -226,6 +241,24 @@
                 "type": "string",
                 "operation": "startsWith"
               }
+            },
+            {
+              "id": "eff189c8-d5a5-4f4f-a2f4-341c029bed4b",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "MVIMG_",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
+            },
+            {
+              "id": "1d22c23d-39cb-4717-98cb-a61b0ce7270c",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "MVIMG-",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
             }
           ],
           "combinator": "or"
@@ -237,10 +270,10 @@
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
       "position": [
-        -720,
-        25
+        -640,
+        176
       ],
-      "id": "17d87169-fd15-4321-a12b-d3b2e3156c1a",
+      "id": "6472fad7-e5cc-4da7-8878-adad02f76f6e",
       "name": "Filter"
     },
     {
@@ -251,7 +284,7 @@
         "messages": {
           "messageValues": [
             {
-              "message": "You are an expert chef who worked in a restaurant for many years.\nYour task is to precisely and concisely describe images of food, starting with the main ingredient. Be very detailed and use the name of the specific dish instead of only ingredients if possible.\nOutput both english and german titles.\n\nExamples:\n* steak on cauliflower and mashed potatoes | Pfeffersteak auf Blumenkohl-Kartoffelbrei\n* Goulash with cauliflower and dumplings | Rindergulasch mit Knödeln\n* Burrata on tomatoes with basil | Burrata auf Tomaten mit Basilikum\n\n"
+              "message": "You are an expert chef who worked in a restaurant for many years.\nYour task is to precisely and concisely describe images of food, starting with the main ingredient. Be very detailed and use the name of the specific dish instead of only ingredients if possible.\nOutput both english and german titles.\n\nExamples:\n* Goulash with cauliflower and dumplings | Rindergulasch mit Knödeln\n* Burrata on tomatoes with basil | Burrata auf Tomaten mit Basilikum\n\n"
             },
             {
               "type": "HumanMessagePromptTemplate",
@@ -263,16 +296,16 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.6,
       "position": [
-        380,
-        -100
+        480,
+        0
       ],
-      "id": "ce97630f-cd03-4ba2-af51-0174cc16e69d",
+      "id": "5435e734-4cf6-4cc6-85fe-40033207411f",
       "name": "Basic LLM Chain1",
       "retryOnFail": true
     },
     {
       "parameters": {
-        "model": "gemma3:27b",
+        "model": "gemma4:26b",
         "options": {
           "format": "default"
         }
@@ -280,29 +313,29 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
       "typeVersion": 1,
       "position": [
-        408,
-        120
+        560,
+        432
       ],
-      "id": "5f1ae25e-e066-4853-9cad-fa233d79cee5",
+      "id": "e842bc3f-69de-4b67-87c6-ba98b38bfcdd",
       "name": "Ollama Chat Model1",
       "credentials": {
         "ollamaApi": {
-          "id": "ollama",
-          "name": "Ollama (docker host)"
+          "id": "e4ZuvsbgYMWButvv",
+          "name": "Ollama account"
         }
       }
     },
     {
       "parameters": {
-        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.output.tags = item.json.output.ingredients\n  if (item.json.output.is_vegan) {\n    item.json.output.tags.push(\"vegan\")\n  } else if (item.json.output.is_vegetarian) {\n    item.json.output.tags.push(\"vegetarian\")\n  }\n}\n\nreturn $input.all();"
+        "jsCode": "// Loop over input items and build a tags array from category + diet + ingredients\nfor (const item of $input.all()) {\n  const out = item.json.output;\n  out.tags = [...out.ingredients];\n\n  if (out.diet === \"vegan\" || out.diet === \"vegetarian\") {\n    out.tags.push(out.diet);\n  }\n\n  if (out.category && out.category !== \"other\") {\n    out.tags.push(out.category);\n  }\n}\nreturn $input.all();"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        976,
-        -100
+        1152,
+        0
       ],
-      "id": "6a8bfbe0-61d1-4fc7-b556-f6ea617896ed",
+      "id": "7a0df73c-14e8-4c1c-a354-945182d2d5bd",
       "name": "Add Tags"
     },
     {
@@ -312,10 +345,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        756,
-        -100
+        928,
+        0
       ],
-      "id": "826dcec7-206e-46ba-8fc1-1e58e8758e86",
+      "id": "0f1c77bc-7444-42de-9273-348557fbfbaa",
       "name": "Trim Dots From Descriptions"
     },
     {
@@ -326,10 +359,10 @@
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        -280,
-        25
+        -192,
+        176
       ],
-      "id": "abbe8b1a-1825-4a09-8d85-2944a1e94f89",
+      "id": "612dc855-2396-48e0-ab93-8c572b568755",
       "name": "Loop Over Items"
     },
     {
@@ -339,7 +372,7 @@
             {
               "id": "1bd7166c-0e38-43ea-bc27-2ac01e770c68",
               "name": "album_id",
-              "value": "pxGrsf1fW1LEeQS3mpyQbOD7",
+              "value": "rJ_skWikoBd4Sz7apFql5Gd2",
               "type": "string"
             }
           ]
@@ -349,10 +382,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -1380,
-        25
+        -1312,
+        176
       ],
-      "id": "d65b8dde-d24d-47ea-b940-a9a5cda300db",
+      "id": "fc16ae4f-2dfd-4731-82b8-98e3f561ac3b",
       "name": "Edit Fields"
     }
   ],
@@ -453,6 +486,11 @@
             "node": "Basic LLM Chain1",
             "type": "ai_languageModel",
             "index": 0
+          },
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
           }
         ]
       ]
@@ -527,13 +565,14 @@
   },
   "active": false,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "binaryMode": "separate"
   },
-  "versionId": "be546a20-7e62-4244-b0a6-479b568cdf80",
+  "versionId": "cc1b381f-3946-4e88-8f23-b35da7c80b6e",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+    "instanceId": "51433959e3a5f04d168b5cad2904119131731e3dd3c2ada5432d8d5e9a87b988"
   },
-  "id": "XHnXpNxlPPUyg1op",
+  "id": "2Qf6QqD7546dgVHy",
   "tags": []
 }
