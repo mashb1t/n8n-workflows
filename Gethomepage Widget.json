@@ -1,0 +1,392 @@
+{
+  "name": "gethomepage widget",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "n8n-homepage-widget",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -304,
+        192
+      ],
+      "id": "cd520a8a-7e3a-4e7f-a3aa-a7a124b3c503",
+      "name": "Webhook",
+      "webhookId": "bdd1e9d5-2eaa-493a-91bb-ce80d4077cc4",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "G2sVnOXPJYUvAI0j",
+          "name": "gethomepage Header Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "returnAll": false,
+        "limit": "={{ $('Globals').item.json.limit }}",
+        "filters": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        592,
+        16
+      ],
+      "id": "700ec21b-0135-49f6-b8cc-0331cb7f8d2d",
+      "name": "Get many workflows",
+      "credentials": {
+        "n8nApi": {
+          "id": "G4XpeV4cSkw88bcy",
+          "name": "n8n account read only"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1040,
+        192
+      ],
+      "id": "9514c397-b40c-46bc-ac44-8f0344ba6d43",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "18a32403-3e0a-4a6e-b0f4-7e3d59c7319f",
+              "name": "limit",
+              "value": "250",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -80,
+        192
+      ],
+      "id": "edd93cd7-dcef-4ba2-8188-8431cc7aa085",
+      "name": "Globals"
+    },
+    {
+      "parameters": {
+        "resource": "execution",
+        "limit": "={{ $('Globals').item.json.limit }}",
+        "filters": {},
+        "options": {
+          "activeWorkflows": false
+        },
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        144,
+        192
+      ],
+      "id": "0c569ae0-5588-4186-99a8-024aa4ceb13e",
+      "name": "All Executions",
+      "credentials": {
+        "n8nApi": {
+          "id": "G4XpeV4cSkw88bcy",
+          "name": "n8n account read only"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "execution",
+        "limit": "={{ $('Globals').item.json.limit }}",
+        "filters": {
+          "workflowId": {
+            "__rl": true,
+            "value": "lK1tZbG3k4ZTETmX",
+            "mode": "list",
+            "cachedResultName": "gethomepage widget (#lK1tZbG3k4ZTETmX)"
+          }
+        },
+        "options": {
+          "activeWorkflows": false
+        },
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        144,
+        384
+      ],
+      "id": "cb646925-a5f3-4f06-9e49-988455430150",
+      "name": "Gethomepage Executions",
+      "credentials": {
+        "n8nApi": {
+          "id": "G4XpeV4cSkw88bcy",
+          "name": "n8n account read only"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const cutoff = Date.now() - 24 * 60 * 60 * 1000;\n\n// IDs to exclude — the gethomepage widget executions\nconst excludeIds = new Set(\n  $('Gethomepage Executions').all().map(it => String(it.json.id))\n);\n\nconst items = $('All Executions').all();\nlet executions24h = 0;\nlet failed24h = 0;\nfor (const it of items) {\n  const e = it.json;\n  if (excludeIds.has(String(e.id))) continue;          // drop the overlap\n  const ts = Date.parse(e.startedAt || e.stoppedAt || e.createdAt || \"\");\n  if (Number.isNaN(ts) || ts < cutoff) continue;\n  executions24h += 1;\n  if (e.status === \"error\") failed24h += 1;\n}\nreturn [\n  {\n    json: {\n      executions_24h: executions24h,\n      executions_failed_24h: failed24h\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        288
+      ],
+      "id": "dc630948-c0b0-492d-b842-a734e2f37362",
+      "name": "Calculate sums"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      workflows: $input.all().length,\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        16
+      ],
+      "id": "9cdd7881-591f-47fc-8fd9-23e6e0e1d2e5",
+      "name": "Calculate length"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        592,
+        288
+      ],
+      "id": "c01854f5-2209-4544-9cf6-12e68a7bfe63",
+      "name": "Remove Duplicates"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        368,
+        288
+      ],
+      "id": "4742fd98-b5c7-49ad-8803-3a49ce4b270a",
+      "name": "Combine"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        192
+      ],
+      "id": "3afe6c4d-d31b-4906-8e9b-9668ac27ce0d",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a8d09b0b-a643-45ce-91e5-6c0fe89a602e",
+              "name": "workflows",
+              "value": "={{ $json.data[0].workflows }}",
+              "type": "number"
+            },
+            {
+              "id": "2757fd9f-a2f6-4481-94ef-4cf4b68035ff",
+              "name": "executions_24h",
+              "value": "={{ $json.data[1].executions_24h }}",
+              "type": "number"
+            },
+            {
+              "id": "fc069fa9-65c7-45c3-bfb7-917e813a37db",
+              "name": "executions_failed_24h",
+              "value": "={{ $json.data[1].executions_failed_24h }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1488,
+        192
+      ],
+      "id": "d924c95d-e16a-4af7-b0ec-942e5c4c5f7a",
+      "name": "Flatten"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Globals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many workflows": {
+      "main": [
+        [
+          {
+            "node": "Calculate length",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Globals": {
+      "main": [
+        [
+          {
+            "node": "Get many workflows",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "All Executions",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Gethomepage Executions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "All Executions": {
+      "main": [
+        [
+          {
+            "node": "Combine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gethomepage Executions": {
+      "main": [
+        [
+          {
+            "node": "Combine",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Calculate sums": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Calculate length": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates": {
+      "main": [
+        [
+          {
+            "node": "Calculate sums",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Flatten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flatten": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "db9851f4-bbe1-4d2c-bbe3-7ba224363d30",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "51433959e3a5f04d168b5cad2904119131731e3dd3c2ada5432d8d5e9a87b988"
+  },
+  "nodeGroups": [],
+  "id": "lK1tZbG3k4ZTETmX",
+  "tags": []
+}
