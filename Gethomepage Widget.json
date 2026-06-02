@@ -12,7 +12,7 @@
       "typeVersion": 2.1,
       "position": [
         -304,
-        192
+        96
       ],
       "id": "cd520a8a-7e3a-4e7f-a3aa-a7a124b3c503",
       "name": "Webhook",
@@ -34,7 +34,7 @@
       "type": "n8n-nodes-base.n8n",
       "typeVersion": 1,
       "position": [
-        592,
+        368,
         16
       ],
       "id": "700ec21b-0135-49f6-b8cc-0331cb7f8d2d",
@@ -51,7 +51,7 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        1040,
+        816,
         192
       ],
       "id": "9514c397-b40c-46bc-ac44-8f0344ba6d43",
@@ -144,7 +144,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        816,
+        592,
         288
       ],
       "id": "dc630948-c0b0-492d-b842-a734e2f37362",
@@ -157,24 +157,11 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        816,
+        592,
         16
       ],
       "id": "9cdd7881-591f-47fc-8fd9-23e6e0e1d2e5",
       "name": "Calculate length"
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "type": "n8n-nodes-base.removeDuplicates",
-      "typeVersion": 2,
-      "position": [
-        592,
-        288
-      ],
-      "id": "c01854f5-2209-4544-9cf6-12e68a7bfe63",
-      "name": "Remove Duplicates"
     },
     {
       "parameters": {},
@@ -195,7 +182,7 @@
       "type": "n8n-nodes-base.aggregate",
       "typeVersion": 1,
       "position": [
-        1264,
+        1040,
         192
       ],
       "id": "3afe6c4d-d31b-4906-8e9b-9668ac27ce0d",
@@ -230,11 +217,22 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1488,
+        1264,
         192
       ],
       "id": "d924c95d-e16a-4af7-b0ec-942e5c4c5f7a",
       "name": "Flatten"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        288
+      ],
+      "id": "9dcc8433-3476-4749-bf3a-ad9e37911bd0",
+      "name": "When clicking ‘Execute workflow’"
     }
   ],
   "pinData": {},
@@ -326,22 +324,11 @@
         ]
       ]
     },
-    "Remove Duplicates": {
-      "main": [
-        [
-          {
-            "node": "Calculate sums",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Combine": {
       "main": [
         [
           {
-            "node": "Remove Duplicates",
+            "node": "Calculate sums",
             "type": "main",
             "index": 0
           }
@@ -374,6 +361,17 @@
       "main": [
         []
       ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Globals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -381,7 +379,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "db9851f4-bbe1-4d2c-bbe3-7ba224363d30",
+  "versionId": "804aeee6-e2cb-496a-a551-39736f6a796e",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "51433959e3a5f04d168b5cad2904119131731e3dd3c2ada5432d8d5e9a87b988"
